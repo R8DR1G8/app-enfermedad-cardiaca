@@ -1,0 +1,2 @@
+age,sex,chest_pain_type,resting_blood_pressure,cholestoral,fasting_blood_sugar,rest_ecg,Max_heart_rate,exercise_induced_angina,oldpeak,slope,vessels_colored_by_flourosopy,thalassemia,Predicción
+50,1,0,120,200,1,0,150,1,1.0,0,0,1,0
