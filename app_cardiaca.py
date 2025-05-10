@@ -1,77 +1,61 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import matplotlib.pyplot as plt
-import os
 
-# Cargar el modelo entrenado
-modelo = joblib.load('modelo_cardiaco.pkl')
+# Cargar el modelo previamente entrenado
+modelo = joblib.load('modelo_cardiaco_balanceado.pkl')
 
-st.title("🫀 Predicción de Enfermedades Cardíacas")
-st.markdown("Ingrese los datos del paciente para evaluar su riesgo cardíaco:")
+# Título de la app
+st.title("❤️ Predicción de Enfermedad Cardíaca")
 
-# Entradas del usuario
+# Formulario de entrada
+st.header("🧾 Ingresá los datos del paciente:")
+
 age = st.number_input("Edad", min_value=1, max_value=120, value=50)
-sex = st.selectbox("Sexo", options=[1, 0], format_func=lambda x: "Masculino" if x == 1 else "Femenino")
-cp = st.selectbox("Tipo de dolor en el pecho", options=[0, 1, 2, 3], format_func=lambda x: [
-    "Angina típica", "Angina atípica", "Dolor no anginoso", "Asintomático"][x])
-resting_bp = st.number_input("Presión arterial en reposo (mm Hg)", min_value=80, max_value=200, value=120)
-chol = st.number_input("Colesterol sérico (mg/dl)", min_value=100, max_value=600, value=200)
-fbs = st.selectbox("Azúcar en ayunas > 120 mg/dl", options=[1, 0], format_func=lambda x: "Sí" if x == 1 else "No")
-rest_ecg = st.selectbox("Electrocardiograma en reposo", options=[0, 1, 2], format_func=lambda x: [
-    "Normal", "Anormalidad ST-T", "Hipertrofia ventricular"][x])
-thalach = st.number_input("Frecuencia cardíaca máxima alcanzada", min_value=60, max_value=220, value=150)
-exang = st.selectbox("¿Angina inducida por ejercicio?", options=[1, 0], format_func=lambda x: "Sí" if x == 1 else "No")
-oldpeak = st.number_input("Depresión ST", min_value=0.0, max_value=10.0, value=1.0)
-slope = st.selectbox("Pendiente del ST", options=[0, 1, 2], format_func=lambda x: [
-    "Ascendente", "Plana", "Descendente"][x])
-vessels = st.selectbox("Nº de vasos coloreados (fluoroscopía)", options=[0, 1, 2, 3, 4])
-thal = st.selectbox("Talasemia", options=[1, 2, 3, 0], format_func=lambda x: {
-    1: "Normal", 2: "Defecto fijo", 3: "Defecto reversible", 0: "Desconocido"}[x])
+sex = st.selectbox("Sexo", ["Male", "Female"])
+cp = st.selectbox("Tipo de dolor en el pecho", ["Typical angina", "Atypical angina", "Non-anginal pain", "Asymptomatic"])
+resting_bp = st.number_input("Presión en reposo", min_value=80, max_value=200, value=120)
+cholestoral = st.number_input("Colesterol", min_value=100, max_value=600, value=250)
+fbs = st.selectbox("Azúcar en sangre en ayunas", ["Lower than 120 mg/ml", "Greater than 120 mg/ml"])
+rest_ecg = st.selectbox("ECG en reposo", ["Normal", "ST-T wave abnormality", "Left ventricular hypertrophy"])
+max_hr = st.number_input("Frecuencia cardíaca máxima", min_value=60, max_value=250, value=150)
+exang = st.selectbox("Angina inducida por ejercicio", ["No", "Yes"])
+oldpeak = st.number_input("Oldpeak", min_value=0.0, max_value=6.0, value=1.0)
+slope = st.selectbox("Pendiente del segmento ST", ["Flat", "Upsloping", "Downsloping"])
+vessels = st.selectbox("N° de vasos coloreados", ["Zero", "One", "Two", "Three", "Four"])
+thal = st.selectbox("Talasemia", ["Normal", "Fixed Defect", "Reversable Defect"])
 
-# Crear DataFrame de entrada con nombres correctos
-entrada = pd.DataFrame([[age, sex, cp, resting_bp, chol, fbs, rest_ecg,
-                         thalach, exang, oldpeak, slope, vessels, thal]],
-                       columns=['age', 'sex', 'chest_pain_type', 'resting_blood_pressure', 'cholestoral',
-                                'fasting_blood_sugar', 'rest_ecg', 'Max_heart_rate',
-                                'exercise_induced_angina', 'oldpeak', 'slope',
-                                'vessels_colored_by_flourosopy', 'thalassemia'])
+# Convertir variables categóricas
+entrada = pd.DataFrame({
+    'age': [age],
+    'sex': [1 if sex == 'Male' else 0],
+    'chest_pain_type': [cp],
+    'resting_blood_pressure': [resting_bp],
+    'cholestoral': [cholestoral],
+    'fasting_blood_sugar': [1 if fbs == "Greater than 120 mg/ml" else 0],
+    'rest_ecg': [rest_ecg],
+    'Max_heart_rate': [max_hr],
+    'exercise_induced_angina': [1 if exang == "Yes" else 0],
+    'oldpeak': [oldpeak],
+    'slope': [slope],
+    'vessels_colored_by_flourosopy': [vessels],
+    'thalassemia': [thal]
+})
 
-# Botón para predecir
+# One-hot encoding (tiene que coincidir con el entrenamiento)
+entrada = pd.get_dummies(entrada)
+
+# Asegurarse de que tenga las mismas columnas que durante el entrenamiento
+columnas_entrenadas = modelo.feature_names_in_
+for col in columnas_entrenadas:
+    if col not in entrada.columns:
+        entrada[col] = 0
+entrada = entrada[columnas_entrenadas]
+
+# Botón de predicción
 if st.button("🔍 Predecir"):
     resultado = modelo.predict(entrada)
-
     if resultado[0] == 1:
-        st.error("⚠️ Riesgo de enfermedad cardíaca detectado")
+        st.error("⚠️ Posible enfermedad cardíaca detectada.")
     else:
-        st.success("✅ No se detecta enfermedad cardíaca")
-
-    # Guardar resultado en CSV
-    os.makedirs("resultados", exist_ok=True)
-    resultado_df = entrada.copy()
-    resultado_df['Predicción'] = resultado[0]
-    archivo_csv = "resultados/predicciones.csv"
-
-    if os.path.exists(archivo_csv):
-        resultado_df.to_csv(archivo_csv, mode='a', header=False, index=False)
-    else:
-        resultado_df.to_csv(archivo_csv, index=False)
-
-    st.info("📁 Resultado guardado en 'resultados/predicciones.csv'")
-
-# Mostrar gráficas si hay resultados guardados
-if os.path.exists("resultados/predicciones.csv"):
-    st.markdown("### 📊 Estadísticas de predicciones")
-
-    df_resultados = pd.read_csv("resultados/predicciones.csv")
-    conteo = df_resultados['Predicción'].value_counts()
-
-    # Gráfico de torta
-    fig1, ax1 = plt.subplots()
-    ax1.pie(conteo, labels=conteo.index.map(lambda x: "Con enfermedad" if x == 1 else "Sin enfermedad"),
-            autopct='%1.1f%%', startangle=90)
-    ax1.axis('equal')
-    st.pyplot(fig1)
-
-    # Gráfico de barras
-    st.bar_chart(conteo.rename(index={0: "Sin enfermedad", 1: "Con enfermedad"}))
+        st.success("✅ Sin señales de enfermedad cardíaca.")
