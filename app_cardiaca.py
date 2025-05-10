@@ -59,3 +59,4 @@ if st.button("🔍 Predecir"):
         st.error("⚠️ Posible enfermedad cardíaca detectada.")
     else:
         st.success("✅ Sin señales de enfermedad cardíaca.")
+        st.write("Modelo: modelo_cardiaco_balanceado.pkl")
