@@ -9,7 +9,7 @@ st.title("❤️ Predicción de Enfermedad Cardíaca")
 
 st.header("🧾 Ingresá los datos del paciente:")
 
-# Diccionarios de traducción
+# Diccionarios de traducción al inglés
 opciones_sexo = {"Masculino": "Male", "Femenino": "Female"}
 opciones_cp = {
     "Angina típica": "Typical angina",
@@ -45,7 +45,7 @@ opciones_thal = {
     "Defecto reversible": "Reversable Defect"
 }
 
-# Entradas del formulario
+# Formulario
 age = st.number_input("Edad", min_value=1, max_value=120, value=50)
 sexo = st.selectbox("Sexo", list(opciones_sexo.keys()))
 cp = st.selectbox("Tipo de dolor en el pecho", list(opciones_cp.keys()))
@@ -60,7 +60,7 @@ slope = st.selectbox("Pendiente ST", list(opciones_slope.keys()))
 vessels = st.selectbox("N° de vasos coloreados", list(opciones_vessels.keys()))
 thal = st.selectbox("Talasemia", list(opciones_thal.keys()))
 
-# Preparar los datos
+# Preparar datos
 entrada = pd.DataFrame({
     'age': [age],
     'sex': [1 if opciones_sexo[sexo] == "Male" else 0],
@@ -80,7 +80,7 @@ entrada = pd.DataFrame({
 # Codificación one-hot
 entrada = pd.get_dummies(entrada)
 
-# Reordenar columnas para que coincidan con las del entrenamiento
+# Alinear con las columnas del entrenamiento
 columnas_entrenadas = modelo.feature_names_in_
 for col in columnas_entrenadas:
     if col not in entrada.columns:
@@ -89,9 +89,12 @@ entrada = entrada[columnas_entrenadas]
 
 # Predicción
 if st.button("🔍 Predecir"):
-    resultado = modelo.predict(entrada)
-    if resultado[0] == 1:
-        st.error("⚠️ Posible enfermedad cardíaca detectada.")
+    proba = modelo.predict_proba(entrada)[0][1]
+    umbral = 0.3  # umbral ajustado
+
+    if proba >= umbral:
+        st.error(f"⚠️ Posible enfermedad cardíaca detectada. (Probabilidad: {proba:.2f})")
     else:
-        st.success("✅ Sin señales de enfermedad cardíaca.")
-    st.write("Modelo utilizado: modelo_cardiaco_balanceado.pkl")
+        st.success(f"✅ Sin señales de enfermedad cardíaca. (Probabilidad: {proba:.2f})")
+
+    st.write("🧠 Modelo utilizado: modelo_cardiaco_final.pkl")
