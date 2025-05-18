@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 
 # Cargar el modelo entrenado
-modelo = joblib.load("modelo_cardiaco_balanceado.pkl")
+modelo = joblib.load("modelo_cardiaco_final.pkl")
 
 st.title("❤️ Predicción de Enfermedad Cardíaca")
 
