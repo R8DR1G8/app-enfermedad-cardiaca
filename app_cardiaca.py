@@ -6,10 +6,9 @@ import joblib
 modelo = joblib.load("modelo_cardiaco_final.pkl")
 
 st.title("❤️ Predicción de Enfermedad Cardíaca")
-
 st.header("🧾 Ingresá los datos del paciente:")
 
-# Diccionarios de traducción al inglés
+# Diccionarios de traducción
 opciones_sexo = {"Masculino": "Male", "Femenino": "Female"}
 opciones_cp = {
     "Angina típica": "Typical angina",
@@ -45,7 +44,7 @@ opciones_thal = {
     "Defecto reversible": "Reversable Defect"
 }
 
-# Formulario
+# Entradas del formulario
 age = st.number_input("Edad", min_value=1, max_value=120, value=50)
 sexo = st.selectbox("Sexo", list(opciones_sexo.keys()))
 cp = st.selectbox("Tipo de dolor en el pecho", list(opciones_cp.keys()))
@@ -60,7 +59,7 @@ slope = st.selectbox("Pendiente ST", list(opciones_slope.keys()))
 vessels = st.selectbox("N° de vasos coloreados", list(opciones_vessels.keys()))
 thal = st.selectbox("Talasemia", list(opciones_thal.keys()))
 
-# Preparar datos
+# Preparar los datos
 entrada = pd.DataFrame({
     'age': [age],
     'sex': [1 if opciones_sexo[sexo] == "Male" else 0],
@@ -80,21 +79,32 @@ entrada = pd.DataFrame({
 # Codificación one-hot
 entrada = pd.get_dummies(entrada)
 
-# Alinear con las columnas del entrenamiento
-columnas_entrenadas = modelo.feature_names_in_
+# 🔧 Lista fija de columnas usadas en el modelo
+columnas_entrenadas = [
+    'age', 'sex', 'resting_blood_pressure', 'cholestoral',
+    'fasting_blood_sugar', 'Max_heart_rate', 'exercise_induced_angina',
+    'oldpeak', 'chest_pain_type_Asymptomatic', 'chest_pain_type_Atypical angina',
+    'chest_pain_type_Non-anginal pain', 'chest_pain_type_Typical angina',
+    'rest_ecg_Left ventricular hypertrophy', 'rest_ecg_Normal',
+    'rest_ecg_ST-T wave abnormality', 'slope_Downsloping', 'slope_Flat',
+    'slope_Upsloping', 'thalassemia_Fixed Defect', 'thalassemia_Normal',
+    'thalassemia_Reversable Defect', 'vessels_colored_by_flourosopy_Four',
+    'vessels_colored_by_flourosopy_One', 'vessels_colored_by_flourosopy_Three',
+    'vessels_colored_by_flourosopy_Two', 'vessels_colored_by_flourosopy_Zero'
+]
+
+# Agregar columnas faltantes con 0
 for col in columnas_entrenadas:
     if col not in entrada.columns:
         entrada[col] = 0
 entrada = entrada[columnas_entrenadas]
 
-# Predicción
+# 📊 Predicción con umbral ajustado
 if st.button("🔍 Predecir"):
-    proba = modelo.predict_proba(entrada)[0][1]
-    umbral = 0.3  # umbral ajustado
-
+    proba = modelo.predict_proba(entrada)[0][1]  # Probabilidad clase 1
+    umbral = 0.3  # Más sensible a enfermedad
     if proba >= umbral:
         st.error(f"⚠️ Posible enfermedad cardíaca detectada. (Probabilidad: {proba:.2f})")
     else:
         st.success(f"✅ Sin señales de enfermedad cardíaca. (Probabilidad: {proba:.2f})")
-
-    st.write("🧠 Modelo utilizado: modelo_cardiaco_final.pkl")
+    st.caption("🔍 Modelo: modelo_cardiaco_final.pkl")
