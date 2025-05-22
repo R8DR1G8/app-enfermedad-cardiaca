@@ -3,12 +3,13 @@ import pandas as pd
 import joblib
 
 # Cargar el modelo entrenado
-modelo = joblib.load("modelo_cardiaco_final.pkl")
+modelo = joblib.load("modelo_cardiaco_definitivo.pkl")
 
+# Título
 st.title("❤️ Predicción de Enfermedad Cardíaca")
 st.header("🧾 Ingresá los datos del paciente:")
 
-# Diccionarios de traducción
+# Diccionarios de opciones
 opciones_sexo = {"Masculino": "Male", "Femenino": "Female"}
 opciones_cp = {
     "Angina típica": "Typical angina",
@@ -44,22 +45,22 @@ opciones_thal = {
     "Defecto reversible": "Reversable Defect"
 }
 
-# Entradas del formulario
-age = st.number_input("Edad", min_value=1, max_value=120, value=50)
+# Entradas
+age = st.number_input("Edad", 1, 120, 50)
 sexo = st.selectbox("Sexo", list(opciones_sexo.keys()))
 cp = st.selectbox("Tipo de dolor en el pecho", list(opciones_cp.keys()))
-resting_bp = st.number_input("Presión en reposo", min_value=80, max_value=200, value=120)
-cholestoral = st.number_input("Colesterol", min_value=100, max_value=600, value=250)
+resting_bp = st.number_input("Presión en reposo", 80, 200, 120)
+cholestoral = st.number_input("Colesterol", 100, 600, 250)
 fbs = st.selectbox("Azúcar en ayunas", list(opciones_fbs.keys()))
 rest_ecg = st.selectbox("ECG en reposo", list(opciones_rest_ecg.keys()))
-max_hr = st.number_input("Frecuencia cardíaca máxima", min_value=60, max_value=250, value=150)
+max_hr = st.number_input("Frecuencia cardíaca máxima", 60, 250, 150)
 exang = st.selectbox("¿Angina inducida por ejercicio?", list(opciones_exang.keys()))
-oldpeak = st.number_input("Oldpeak", min_value=0.0, max_value=6.0, value=1.0)
+oldpeak = st.number_input("Oldpeak", 0.0, 6.0, 1.0)
 slope = st.selectbox("Pendiente ST", list(opciones_slope.keys()))
 vessels = st.selectbox("N° de vasos coloreados", list(opciones_vessels.keys()))
 thal = st.selectbox("Talasemia", list(opciones_thal.keys()))
 
-# Preparar los datos
+# DataFrame para predicción
 entrada = pd.DataFrame({
     'age': [age],
     'sex': [1 if opciones_sexo[sexo] == "Male" else 0],
@@ -79,7 +80,7 @@ entrada = pd.DataFrame({
 # Codificación one-hot
 entrada = pd.get_dummies(entrada)
 
-# 🔧 Lista fija de columnas usadas en el modelo
+# Columnas del entrenamiento
 columnas_entrenadas = [
     'age', 'sex', 'resting_blood_pressure', 'cholestoral',
     'fasting_blood_sugar', 'Max_heart_rate', 'exercise_induced_angina',
@@ -93,18 +94,18 @@ columnas_entrenadas = [
     'vessels_colored_by_flourosopy_Two', 'vessels_colored_by_flourosopy_Zero'
 ]
 
-# Agregar columnas faltantes con 0
+# Rellenar columnas faltantes
 for col in columnas_entrenadas:
     if col not in entrada.columns:
         entrada[col] = 0
 entrada = entrada[columnas_entrenadas]
 
-# 📊 Predicción con umbral ajustado
+# Botón de predicción
 if st.button("🔍 Predecir"):
-    proba = modelo.predict_proba(entrada)[0][1]  # Probabilidad clase 1
-    umbral = 0.3  # Más sensible a enfermedad
+    proba = modelo.predict_proba(entrada)[0][1]
+    umbral = 0.3
     if proba >= umbral:
         st.error(f"⚠️ Posible enfermedad cardíaca detectada. (Probabilidad: {proba:.2f})")
     else:
         st.success(f"✅ Sin señales de enfermedad cardíaca. (Probabilidad: {proba:.2f})")
-    st.caption("🔍 Modelo: modelo_cardiaco_final.pkl")
+    st.caption("🔍 Modelo: modelo_cardiaco_definitivo.pkl")
