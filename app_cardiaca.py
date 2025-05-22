@@ -85,8 +85,20 @@ st.subheader("🧾 Depuración (oculto por defecto)")
 with st.expander("Mostrar detalles internos del modelo y datos"):
     st.write("📋 Columnas de entrada generadas por el usuario:")
     st.write(list(entrada.columns))
-    st.write("📦 Columnas esperadas por el modelo:")
-    st.write(list(modelo.feature_names_in_))
+    st.write("📦 Columnas esperadas por el modelo (definidas manualmente):")
+    columnas_modelo = [
+        'age', 'sex', 'resting_blood_pressure', 'cholestoral',
+        'fasting_blood_sugar', 'Max_heart_rate', 'exercise_induced_angina',
+        'oldpeak', 'chest_pain_type_Asymptomatic', 'chest_pain_type_Atypical angina',
+        'chest_pain_type_Non-anginal pain', 'chest_pain_type_Typical angina',
+        'rest_ecg_Left ventricular hypertrophy', 'rest_ecg_Normal',
+        'rest_ecg_ST-T wave abnormality', 'slope_Downsloping', 'slope_Flat',
+        'slope_Upsloping', 'thalassemia_Fixed Defect', 'thalassemia_Normal',
+        'thalassemia_Reversable Defect', 'vessels_colored_by_flourosopy_Four',
+        'vessels_colored_by_flourosopy_One', 'vessels_colored_by_flourosopy_Three',
+        'vessels_colored_by_flourosopy_Two', 'vessels_colored_by_flourosopy_Zero'
+    ]
+    st.write(columnas_modelo)
 
 # Igualar columnas
 for col in modelo.feature_names_in_:
