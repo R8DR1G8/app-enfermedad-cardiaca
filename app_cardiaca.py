@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Cargar el modelo y las columnas
+# 🔐 Cargar modelo y columnas
 paquete = joblib.load("modelo_cardiaco_definitivo.pkl")
 modelo = paquete['modelo']
 columnas_entrenadas = paquete['columnas']
@@ -35,11 +35,7 @@ opciones_slope = {
     "Descendente": "Downsloping"
 }
 opciones_vessels = {
-    "Cero": "Zero",
-    "Uno": "One",
-    "Dos": "Two",
-    "Tres": "Three",
-    "Cuatro": "Four"
+    "Cero": "Zero", "Uno": "One", "Dos": "Two", "Tres": "Three", "Cuatro": "Four"
 }
 opciones_thal = {
     "Normal": "Normal",
@@ -47,7 +43,7 @@ opciones_thal = {
     "Defecto reversible": "Reversable Defect"
 }
 
-# Entradas
+# Formulario de entrada
 age = st.number_input("Edad", 1, 120, 50)
 sexo = st.selectbox("Sexo", list(opciones_sexo.keys()))
 cp = st.selectbox("Tipo de dolor en el pecho", list(opciones_cp.keys()))
@@ -62,7 +58,7 @@ slope = st.selectbox("Pendiente ST", list(opciones_slope.keys()))
 vessels = st.selectbox("N° de vasos coloreados", list(opciones_vessels.keys()))
 thal = st.selectbox("Talasemia", list(opciones_thal.keys()))
 
-# DataFrame de entrada
+# Armar entrada como DataFrame
 entrada = pd.DataFrame({
     'age': [age],
     'sex': [1 if opciones_sexo[sexo] == "Male" else 0],
@@ -82,7 +78,7 @@ entrada = pd.DataFrame({
 # Codificación
 entrada = pd.get_dummies(entrada)
 
-# Asegurarse de que tenga las columnas del modelo
+# Asegurar columnas
 for col in columnas_entrenadas:
     if col not in entrada.columns:
         entrada[col] = 0
