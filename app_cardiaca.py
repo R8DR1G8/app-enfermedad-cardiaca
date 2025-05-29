@@ -2,12 +2,11 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# 🔐 Cargar modelo y columnas
+# Cargar modelo y columnas
 paquete = joblib.load("modelo_cardiaco_definitivo.pkl")
 modelo = paquete['modelo']
 columnas_entrenadas = paquete['columnas']
 
-# Título
 st.title("❤️ Predicción de Enfermedad Cardíaca")
 st.header("🧾 Ingresá los datos del paciente:")
 
@@ -35,7 +34,11 @@ opciones_slope = {
     "Descendente": "Downsloping"
 }
 opciones_vessels = {
-    "Cero": "Zero", "Uno": "One", "Dos": "Two", "Tres": "Three", "Cuatro": "Four"
+    "Cero": "Zero",
+    "Uno": "One",
+    "Dos": "Two",
+    "Tres": "Three",
+    "Cuatro": "Four"
 }
 opciones_thal = {
     "Normal": "Normal",
@@ -43,7 +46,7 @@ opciones_thal = {
     "Defecto reversible": "Reversable Defect"
 }
 
-# Formulario de entrada
+# Entradas
 age = st.number_input("Edad", 1, 120, 50)
 sexo = st.selectbox("Sexo", list(opciones_sexo.keys()))
 cp = st.selectbox("Tipo de dolor en el pecho", list(opciones_cp.keys()))
@@ -58,7 +61,7 @@ slope = st.selectbox("Pendiente ST", list(opciones_slope.keys()))
 vessels = st.selectbox("N° de vasos coloreados", list(opciones_vessels.keys()))
 thal = st.selectbox("Talasemia", list(opciones_thal.keys()))
 
-# Armar entrada como DataFrame
+# Preparar entrada
 entrada = pd.DataFrame({
     'age': [age],
     'sex': [1 if opciones_sexo[sexo] == "Male" else 0],
@@ -75,21 +78,22 @@ entrada = pd.DataFrame({
     'thalassemia': [opciones_thal[thal]]
 })
 
-# Codificación
+# Codificar y alinear columnas
 entrada = pd.get_dummies(entrada)
-
-# Asegurar columnas
 for col in columnas_entrenadas:
     if col not in entrada.columns:
         entrada[col] = 0
 entrada = entrada[columnas_entrenadas]
 
-# Predicción
+# Predicción con triple umbral
 if st.button("🔍 Predecir"):
     proba = modelo.predict_proba(entrada)[0][1]
-    umbral = 0.3
-    if proba >= umbral:
-        st.error(f"⚠️ Posible enfermedad cardíaca detectada. (Probabilidad: {proba:.2f})")
+
+    if proba >= 0.6:
+        st.error(f"⚠️ Alta probabilidad de enfermedad cardíaca. (Probabilidad: {proba:.2f})")
+    elif proba >= 0.4:
+        st.warning(f"🟡 Riesgo intermedio, se recomienda evaluación médica. (Probabilidad: {proba:.2f})")
     else:
         st.success(f"✅ Sin señales de enfermedad cardíaca. (Probabilidad: {proba:.2f})")
-    st.caption("🔍 Modelo: modelo_cardiaco_definitivo.pkl")
+
+    st.caption("🔍 Modelo usado: modelo_cardiaco_definitivo.pkl")
