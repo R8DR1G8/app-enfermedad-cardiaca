@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Cargar modelo y columnas
+# Cargar el modelo y columnas esperadas
 paquete = joblib.load("modelo_cardiaco_definitivo.pkl")
 modelo = paquete['modelo']
 columnas_entrenadas = paquete['columnas']
@@ -10,7 +10,7 @@ columnas_entrenadas = paquete['columnas']
 st.title("❤️ Predicción de Enfermedad Cardíaca")
 st.header("🧾 Ingresá los datos del paciente:")
 
-# Diccionarios de opciones
+# Opciones en español
 opciones_sexo = {"Masculino": "Male", "Femenino": "Female"}
 opciones_cp = {
     "Angina típica": "Typical angina",
@@ -46,7 +46,7 @@ opciones_thal = {
     "Defecto reversible": "Reversable Defect"
 }
 
-# Entradas
+# Entradas del formulario
 age = st.number_input("Edad", 1, 120, 50)
 sexo = st.selectbox("Sexo", list(opciones_sexo.keys()))
 cp = st.selectbox("Tipo de dolor en el pecho", list(opciones_cp.keys()))
@@ -61,7 +61,7 @@ slope = st.selectbox("Pendiente ST", list(opciones_slope.keys()))
 vessels = st.selectbox("N° de vasos coloreados", list(opciones_vessels.keys()))
 thal = st.selectbox("Talasemia", list(opciones_thal.keys()))
 
-# Preparar entrada
+# Preparar los datos
 entrada = pd.DataFrame({
     'age': [age],
     'sex': [1 if opciones_sexo[sexo] == "Male" else 0],
@@ -78,22 +78,21 @@ entrada = pd.DataFrame({
     'thalassemia': [opciones_thal[thal]]
 })
 
-# Codificar y alinear columnas
+# One-hot encoding
 entrada = pd.get_dummies(entrada)
+
+# Asegurar que tenga todas las columnas del modelo
 for col in columnas_entrenadas:
     if col not in entrada.columns:
         entrada[col] = 0
 entrada = entrada[columnas_entrenadas]
 
-# Predicción con triple umbral
+# Botón de predicción
 if st.button("🔍 Predecir"):
     proba = modelo.predict_proba(entrada)[0][1]
-
-    if proba >= 0.6:
-        st.error(f"⚠️ Alta probabilidad de enfermedad cardíaca. (Probabilidad: {proba:.2f})")
-    elif proba >= 0.4:
-        st.warning(f"🟡 Riesgo intermedio, se recomienda evaluación médica. (Probabilidad: {proba:.2f})")
+    umbral = 0.5
+    if proba >= umbral:
+        st.error(f"⚠️ Posible enfermedad cardíaca detectada. (Probabilidad: {proba:.2f})")
     else:
         st.success(f"✅ Sin señales de enfermedad cardíaca. (Probabilidad: {proba:.2f})")
-
-    st.caption("🔍 Modelo usado: modelo_cardiaco_definitivo.pkl")
+    st.caption("🔍 Modelo: modelo_cardiaco_definitivo.pkl")
