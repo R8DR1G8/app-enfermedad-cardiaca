@@ -8,7 +8,7 @@ modelo = paquete['modelo']
 columnas_entrenadas = paquete['columnas']
 
 st.title("❤️ Predicción de Enfermedad Cardíaca")
-st.header("🧾 Ingresá los datos del paciente:")
+st.header("🧾 Ingresa los datos del paciente:")
 
 # Opciones en español
 opciones_sexo = {"Masculino": "Male", "Femenino": "Female"}
@@ -89,10 +89,13 @@ entrada = entrada[columnas_entrenadas]
 
 # Botón de predicción
 if st.button("🔍 Predecir"):
-    proba = modelo.predict_proba(entrada)[0][1]
-    umbral = 0.5
-    if proba >= umbral:
-        st.error(f"⚠️ Posible enfermedad cardíaca detectada. (Probabilidad: {proba:.2f})")
+    probá = modelo.predict_proba(entrada)[0][1]
+    umbral1 = 0.82
+    umbral2 = 0.65
+    if probá >= umbral1:
+        st.error(f"⚠️ Gran posiblibilidad de enfermedad cardíaca detectada. (Probabilidad: {probá:.2f})")
+    elif probá > umbral2:
+        st.warning(f"⁉️ Posible enfermedad cardíaca detectada corta. (Probabilidad: {probá:.2f})")
     else:
-        st.success(f"✅ Sin señales de enfermedad cardíaca. (Probabilidad: {proba:.2f})")
+        st.success(f"✅ Sin señales de enfermedad cardíaca. (Probabilidad: {probá:.2f})")
     st.caption("🔍 Modelo: modelo_cardiaco_definitivo.pkl")

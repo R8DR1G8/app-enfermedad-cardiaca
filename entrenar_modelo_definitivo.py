@@ -1,53 +1,60 @@
-# entrenar_modelo_definitivo.py
-
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix, balanced_accuracy_score
-from sklearn.calibration import CalibratedClassifierCV
 from imblearn.over_sampling import SMOTE
 import joblib
 
-# Leer datos
+# 1. Cargar dataset
 df = pd.read_csv("HeartDiseaseTrain-Test.csv")
 
-# Codificar variables categóricas
+# 2. Detectar nombre correcto de la columna objetivo
+posibles_columnas_objetivo = ['HeartDisease', 'Heart Disease', 'target']
+columna_objetivo = None
+
+for col in posibles_columnas_objetivo:
+    if col in df.columns:
+        columna_objetivo = col
+        break
+
+if columna_objetivo is None:
+    raise ValueError("No se encontró una columna objetivo válida en el archivo CSV.")
+
+# 3. One-hot encoding
 df = pd.get_dummies(df)
 
-# Separar variables
-y = df['HeartDisease']
-X = df.drop('HeartDisease', axis=1)
+# 4. Separar variables
+y = df[columna_objetivo]
+X = df.drop(columna_objetivo, axis=1)
 
-# Guardar nombres de columnas para la app
+# 🔒 Guardar nombres de columnas para la app
 columnas = X.columns.tolist()
 
-# Dividir en entrenamiento y prueba
+# 5. División y balanceo
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Aplicar SMOTE
 smote = SMOTE(random_state=42)
 X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
 
-# Escalar
+# 6. Escalado
 scaler = StandardScaler()
 X_train_res = scaler.fit_transform(X_train_res)
 X_test = scaler.transform(X_test)
 
-# Entrenar modelo calibrado
-base_model = RandomForestClassifier(n_estimators=200, class_weight='balanced', random_state=42)
-modelo = CalibratedClassifierCV(base_model, cv=5)  # Calibración para mejores probabilidades
+# 7. Entrenamiento
+modelo = RandomForestClassifier(n_estimators=200, class_weight='balanced', random_state=42)
 modelo.fit(X_train_res, y_train_res)
 
-# Evaluar
+# 8. Evaluación
 y_pred = modelo.predict(X_test)
 print("📊 Precisión balanceada:", balanced_accuracy_score(y_test, y_pred))
-print("\n🔍 Reporte:\n", classification_report(y_test, y_pred))
+print("\n🔍 Reporte de clasificación:\n", classification_report(y_test, y_pred))
 print("\n🧱 Matriz de confusión:\n", confusion_matrix(y_test, y_pred))
 
-# Guardar modelo
+# 9. Guardar modelo y columnas
 paquete = {
     'modelo': modelo,
     'columnas': columnas
 }
 joblib.dump(paquete, "modelo_cardiaco_definitivo.pkl")
+print("✅ Modelo y columnas guardadas en 'modelo_cardiaco_definitivo.pkl'")
