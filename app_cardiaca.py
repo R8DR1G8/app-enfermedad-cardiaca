@@ -91,11 +91,20 @@ entrada = entrada[columnas_entrenadas]
 if st.button("🔍 Predecir"):
     probá = modelo.predict_proba(entrada)[0][1]
     umbral1 = 0.77
-    umbral2 = 0.56
+    umbral2 = 0.63
+    umbral3 = 0.55
     if probá >= umbral1:
-        st.error(f"⚠️ Gran posiblibilidad de enfermedad cardíaca detectada. (Probabilidad: {probá:.2f})")
+        st.error(f"""⚠️ Preferible dirigirse a un hospital
+                 Gran posiblibilidad de enfermedad cardíaca detectada.
+                 (Probabilidad: {probá:.2f})""")
     elif probá > umbral2:
-        st.warning(f"⁉️ Mínima posibilidad de enfermedad cardíaca detectada. (Probabilidad: {probá:.2f})")
+        st.warning(f"""⁉️ Recomendable realizar una revisión médica.
+                   Una posibilidad de enfermedad cardíaca detectada.
+                   (Probabilidad: {probá:.2f})""")
+    elif probá > umbral3:
+        st.warning(f"""🤨 Nada grave hasta el momento.
+                   Mínima posibilidad de enfermedad cardíaca detectada.
+                   (Probabilidad: {probá:.2f})""")
     else:
-        st.success(f"✅ Sin señales de enfermedad cardíaca. (Probabilidad: {probá:.2f})")
+        st.success(f"""✅ Sin señales de enfermedad cardíaca. (Probabilidad: {probá:.2f})""")
     st.caption("🔍 Modelo: modelo_cardiaco_definitivo.pkl")
