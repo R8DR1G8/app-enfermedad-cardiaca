@@ -98,11 +98,11 @@ if st.button("🔍 Predecir"):
     probabilidad = modelo.predict_proba(entrada_scaled)[0][1]
     
     st.subheader("🔎 Resultado del análisis:")
-    if probabilidad >= 0.77:
+    if probabilidad >= 0.70:
         st.error(f"⚠️ Alta probabilidad de enfermedad cardíaca. Recomendado acudir al hospital.\n\nProbabilidad: {probabilidad:.2f}")
-    elif probabilidad > 0.63:
+    elif probabilidad > 0.50:
         st.warning(f"⁉️ Riesgo moderado. Considere una revisión médica.\n\nProbabilidad: {probabilidad:.2f}")
-    elif probabilidad > 0.55:
+    elif probabilidad > 0.37:
         st.info(f"🤨 Riesgo leve. Manténgase en observación.\n\nProbabilidad: {probabilidad:.2f}")
     else:
         st.success(f"✅ Sin señales significativas de enfermedad cardíaca.\n\nProbabilidad: {probabilidad:.2f}")
