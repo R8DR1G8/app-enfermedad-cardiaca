@@ -9,52 +9,48 @@ import joblib
 # 1. Cargar dataset
 df = pd.read_csv("HeartDiseaseTrain-Test.csv")
 
-# 2. Detectar nombre correcto de la columna objetivo
-posibles_columnas_objetivo = ['HeartDisease', 'Heart Disease', 'target']
-columna_objetivo = None
-
-for col in posibles_columnas_objetivo:
-    if col in df.columns:
-        columna_objetivo = col
+# 2. Detectar columna objetivo
+for posible in ['HeartDisease', 'Heart Disease', 'target']:
+    if posible in df.columns:
+        columna_objetivo = posible
         break
+else:
+    raise ValueError("No se encontró una columna objetivo válida.")
 
-if columna_objetivo is None:
-    raise ValueError("No se encontró una columna objetivo válida en el archivo CSV.")
-
-# 3. One-hot encoding
+# 3. Codificación categórica
 df = pd.get_dummies(df)
 
 # 4. Separar variables
 y = df[columna_objetivo]
-X = df.drop(columna_objetivo, axis=1)
+X = df.drop(columns=[columna_objetivo])
+columnas_modelo = X.columns.tolist()
 
-# 🔒 Guardar nombres de columnas para la app
-columnas = X.columns.tolist()
-
-# 5. División y balanceo
+# 5. Dividir y balancear
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 smote = SMOTE(random_state=42)
 X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
 
-# 6. Escalado
+# 6. Escalar
 scaler = StandardScaler()
-X_train_res = scaler.fit_transform(X_train_res)
-X_test = scaler.transform(X_test)
+X_train_scaled = scaler.fit_transform(X_train_res)
+X_test_scaled = scaler.transform(X_test)
 
-# 7. Entrenamiento
-modelo = RandomForestClassifier(n_estimators=200, class_weight='balanced', random_state=42)
-modelo.fit(X_train_res, y_train_res)
+# 7. Entrenar modelo
+modelo = RandomForestClassifier(
+    n_estimators=300,
+    max_depth=10,
+    class_weight='balanced',
+    random_state=42
+)
+modelo.fit(X_train_scaled, y_train_res)
 
 # 8. Evaluación
-y_pred = modelo.predict(X_test)
+y_pred = modelo.predict(X_test_scaled)
 print("📊 Precisión balanceada:", balanced_accuracy_score(y_test, y_pred))
 print("\n🔍 Reporte de clasificación:\n", classification_report(y_test, y_pred))
 print("\n🧱 Matriz de confusión:\n", confusion_matrix(y_test, y_pred))
 
-# 9. Guardar modelo y columnas
-paquete = {
-    'modelo': modelo,
-    'columnas': columnas
-}
-joblib.dump(paquete, "modelo_cardiaco_definitivo.pkl")
-print("✅ Modelo y columnas guardadas en 'modelo_cardiaco_definitivo.pkl'")
+# 9. Guardar modelo y scaler
+joblib.dump({'modelo': modelo, 'columnas': columnas_modelo}, "modelo_cardiaco_definitivo.pkl")
+joblib.dump(scaler, "scaler.pkl")
+print("✅ Modelo y scaler guardados como 'modelo_cardiaco_definitivo.pkl' y 'scaler.pkl'")
