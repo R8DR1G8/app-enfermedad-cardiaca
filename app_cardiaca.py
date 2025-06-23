@@ -94,17 +94,39 @@ entrada = entrada[columnas_entrenadas]
 entrada_scaled = scaler.transform(entrada)
 
 # Botón de predicción
+# 🔍 Umbrales personalizados según análisis de desempeño del modelo
+umbral_alto = 0.85
+umbral_medio = 0.65
+umbral_bajo = 0.50
+
+# 🔘 Botón de predicción
 if st.button("🔍 Predecir"):
     probabilidad = modelo.predict_proba(entrada_scaled)[0][1]
     
     st.subheader("🔎 Resultado del análisis:")
-    if probabilidad >= 0.70:
-        st.error(f"⚠️ Alta probabilidad de enfermedad cardíaca. Recomendado acudir al hospital.\n\nProbabilidad: {probabilidad:.2f}")
-    elif probabilidad > 0.50:
-        st.warning(f"⁉️ Riesgo moderado. Considere una revisión médica.\n\nProbabilidad: {probabilidad:.2f}")
-    elif probabilidad > 0.37:
-        st.info(f"🤨 Riesgo leve. Manténgase en observación.\n\nProbabilidad: {probabilidad:.2f}")
-    else:
-        st.success(f"✅ Sin señales significativas de enfermedad cardíaca.\n\nProbabilidad: {probabilidad:.2f}")
+
+    if probabilidad >= umbral_alto:
+        st.error(f"""⚠️ Alta probabilidad de enfermedad cardíaca. 
+        Recomendado acudir al hospital. 
+        
+        🔢 Probabilidad: {probabilidad:.2f}""")
     
+    elif probabilidad >= umbral_medio:
+        st.warning(f"""⁉️ Riesgo moderado de enfermedad cardíaca. 
+        Se recomienda realizar una revisión médica. 
+        
+        🔢 Probabilidad: {probabilidad:.2f}""")
+    
+    elif probabilidad >= umbral_bajo:
+        st.info(f"""🤨 Riesgo leve detectado. 
+        Revisión preventiva sugerida. 
+        
+        🔢 Probabilidad: {probabilidad:.2f}""")
+    
+    else:
+        st.success(f"""✅ Sin señales significativas de enfermedad cardíaca. 
+        Todo parece estar bien. 
+        
+        🔢 Probabilidad: {probabilidad:.2f}""")
+
     st.caption("📦 Modelo: modelo_cardiaco_definitivo.pkl | Escalado: scaler.pkl")
