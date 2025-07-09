@@ -107,13 +107,13 @@ if st.button("🔍 Predecir"):
 
     if probabilidad >= umbral_alto:
         st.error(f"""⚠️ Alta probabilidad de enfermedad cardíaca. 
-        Recomendado acudir al hospital. 
+        💀 💀 Correeeee al hospital!!!!!! 
         
         🔢 Probabilidad: {probabilidad:.2f}""")
     
     elif probabilidad >= umbral_medio:
         st.warning(f"""⁉️ Riesgo moderado de enfermedad cardíaca. 
-        Se recomienda realizar una revisión médica. 
+        Revisate por si acaso 🤨🫵. 
         
         🔢 Probabilidad: {probabilidad:.2f}""")
     
@@ -125,7 +125,7 @@ if st.button("🔍 Predecir"):
     
     else:
         st.success(f"""✅ Sin señales significativas de enfermedad cardíaca. 
-        Todo parece estar bien. 
+        Todo parece estar bien👌👌. 
         
         🔢 Probabilidad: {probabilidad:.2f}""")
 
